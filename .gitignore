@@ -5,3 +5,4 @@
 /api/Stops.csv
 *.bin
 *.png
+api/databases/last_fetched.csv
