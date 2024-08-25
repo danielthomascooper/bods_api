@@ -1,0 +1,7 @@
+/SECRET.txt
+/api/databases/gfts/
+/api/databases/itm_all_gtfs.zip
+/api/databases/gazetteer.json
+/api/Stops.csv
+*.bin
+*.png
