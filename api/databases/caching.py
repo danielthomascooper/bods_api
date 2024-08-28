@@ -43,9 +43,10 @@ API_PATHS = {"gazetteer": "https://naptan.api.dft.gov.uk/v1/nptg",
 TIME_LIMITS = {"gazetteer": lambda _: 3600 * 12,
                "gtfs": seconds_until_gtfs}
 
-def update_databases() -> None:
+def update_databases() -> list[str]:
     """Update databases if time specified in 'TIME_LIMITS' has passed"""
     global API_PATHS, TIME_LIMITS
+    updated_keys = []
     existing_keys = {}  # get all existing keys
     with open("last_fetched.csv", newline="") as file_reader:
         csv_reader = csv.DictReader(file_reader)
@@ -57,11 +58,15 @@ def update_databases() -> None:
             if (key in API_PATHS) and (time.time() - int(timestamp) > TIME_LIMITS[key](timestamp)):
                 logging.info(f"outdated: {key}")
                 download_data(key)
+                updated_keys.append(key)
 
     for key in API_PATHS:  # download all never downloaded files
         if key not in existing_keys:
             logging.info(f"never fetched: {key}")
             download_data(key)
+            updated_keys.append(key)
+
+    return updated_keys
 
 
 def update_timing(key: str) -> None:
@@ -143,4 +148,4 @@ def get_database(key: str) -> dict:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    update_databases()  # test update
+    print(update_databases())  # test update

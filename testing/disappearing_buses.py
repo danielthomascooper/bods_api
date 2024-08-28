@@ -3,7 +3,7 @@ from time import sleep
 import matplotlib.pyplot as plt
 import numpy as np
 
-with open("SECRET.txt", "r") as api_reader:
+with open("../SECRET.txt", "r") as api_reader:
     API_KEY = api_reader.readline().strip()
 
 request_bounds = {"boundingBox": "-0.7196044921875001,51.503406029464514,-1.1666107177734377,51.386786571080854"}

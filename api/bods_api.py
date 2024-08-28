@@ -1,7 +1,7 @@
 from lxml import etree
 from typing import Literal
 import requests
-from api.responses import LocationResponse
+from api.location.responses import LocationResponse
 
 data_types = ["location", "timetable", "fares"]  # allowed data types
 

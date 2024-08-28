@@ -4,6 +4,7 @@ import pandas as pd
 import json
 import xmltodict
 from api.xml_methods import local_xpath, element_to_dict, flatten
+import os
 
 stop_dict = {}
 
@@ -28,11 +29,15 @@ class LocationResponse:
             The path to the NaPTaN csv file containing all stop data.
         """
         global stop_dict
+
+        script_dir = os.path.dirname(__file__)
+        rel_path = os.path.join(script_dir, "../api/Stops.csv")
+
         self.root: etree.Element = response_tree
         self.namespace = etree.QName(self.root).namespace  # get root default namespace
         if not stop_dict:
             print("loading stops...")
-            stop_dict = load_stops("api/Stops.csv")
+            stop_dict = load_stops(rel_path)
             print("loaded")
         self.fix_station_names()
 
@@ -88,3 +93,5 @@ class LocationResponse:
                 dest_name_elem.text = stop_dict[dest_ref_elem.text]["CommonName"]
             except KeyError:
                 continue
+
+
