@@ -99,4 +99,3 @@ if __name__ == "__main__":
     test_manager.swap_database_path()
     # print(test_manager.current_database)
 
-

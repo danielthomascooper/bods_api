@@ -28,7 +28,7 @@ def gtfs_files_to_db(database: str|os.PathLike, src_dir: str|os.PathLike):
 
     for file in os.listdir(src_dir):
         start_time = perf_counter()
-        conn.execute(CREATE_TABLE_COMMANDS[file])
+        conn.executescript(CREATE_TABLE_COMMANDS[file])
         full_csv_path = Path(os.path.join(src_dir, file)).as_posix()
         filename = Path(file).stem
         logging.info(f"Saving '{file}' to second SQL database")
