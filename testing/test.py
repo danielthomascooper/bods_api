@@ -1,9 +1,22 @@
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 from api.bods_api import BODS_request
 
 import plotly.express as px
 
-with open("../SECRET.txt", "r") as api_reader:
-    API_KEY = api_reader.readline().strip()
+# Load API key: prefer ../SECRET.txt, fall back to environment variable BODS_API_KEY
+secret_path = os.path.join(os.path.dirname(__file__), "..", "SECRET.txt")
+if os.path.exists(secret_path):
+    with open(secret_path, "r") as api_reader:
+        API_KEY = api_reader.readline().strip()
+else:
+    API_KEY = os.environ.get("BODS_API_KEY")
+    if not API_KEY:
+        raise FileNotFoundError(
+            "SECRET.txt not found and environment variable BODS_API_KEY is not set.\n"
+            "Create ../SECRET.txt or export BODS_API_KEY to proceed."
+        )
 
 search_params = {"lineRef": "X4",
                  "operatorRef": "FBRI"}
@@ -22,4 +35,12 @@ fig = px.scatter_mapbox(my_df,
                         )
 
 
-fig.show()
+html_path = "map_plot.html"
+png_path = "map_plot.png"
+fig.write_html(html_path, include_plotlyjs='cdn')
+print(f"Saved {html_path}")
+try:
+    fig.write_image(png_path, scale=2)
+    print(f"Saved {png_path}")
+except Exception as e:
+    print("Could not save PNG (kaleido may be missing):", e)

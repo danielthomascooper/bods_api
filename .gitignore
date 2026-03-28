@@ -7,3 +7,5 @@
 *.png
 api/databases/last_fetched.csv
 venv/
+__pycache__/
+*.pyc
