@@ -2,9 +2,16 @@ from api.bods_api import BODS_request
 from time import sleep
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
-with open("../SECRET.txt", "r") as api_reader:
-    API_KEY = api_reader.readline().strip()
+secret_path = os.path.join(os.path.dirname(__file__), "..", "SECRET.txt")
+if os.path.exists(secret_path):
+    with open(secret_path, "r") as api_reader:
+        API_KEY = api_reader.readline().strip()
+else:
+    API_KEY = os.environ.get("BODS_API_KEY")
+    if not API_KEY:
+        raise RuntimeError("Set BODS_API_KEY or create SECRET.txt")
 
 request_bounds = {"boundingBox": "-0.7196044921875001,51.503406029464514,-1.1666107177734377,51.386786571080854"}
 request_line = {"lineRef": "17", "operatorRef": "RBUS"}

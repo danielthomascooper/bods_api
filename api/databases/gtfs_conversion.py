@@ -1,12 +1,14 @@
 import sqlite3
 import os
 import zipfile
-from api.databases.gfts.commands import *
+from api.databases.gfts.commands import CREATE_TABLE_COMMANDS
 import csv
 from pathlib import Path
 from time import perf_counter
 import glob
 import logging
+
+logger = logging.getLogger(__name__)
 
 
 def gtfs_files_to_db(database: str|os.PathLike, src_dir: str|os.PathLike):
@@ -27,11 +29,14 @@ def gtfs_files_to_db(database: str|os.PathLike, src_dir: str|os.PathLike):
     conn = sqlite3.connect(database)
 
     for file in os.listdir(src_dir):
+        if file not in CREATE_TABLE_COMMANDS:
+            logger.warning("Skipping unknown GTFS file: %s", file)
+            continue
         start_time = perf_counter()
         conn.executescript(CREATE_TABLE_COMMANDS[file])
         full_csv_path = Path(os.path.join(src_dir, file)).as_posix()
         filename = Path(file).stem
-        logging.info(f"Saving '{file}' to second SQL database")
+        logger.info("Saving '%s' to SQL database", file)
 
         with open(full_csv_path, 'r', newline="") as f:
             csv_reader = csv.DictReader(f)
@@ -41,7 +46,7 @@ def gtfs_files_to_db(database: str|os.PathLike, src_dir: str|os.PathLike):
             conn.commit()
 
         file_time = perf_counter() - start_time
-        logging.info(f"Uploading file {file} took {file_time // 60}:{file_time % 60:.2f}")
+        logger.info("Uploading file %s took %d:%05.2f", file, file_time // 60, file_time % 60)
     conn.close()
 
 def create_database(zip_path: os.PathLike|str, extraction_dir: os.PathLike|str, database_path: os.PathLike|str):

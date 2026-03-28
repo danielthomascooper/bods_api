@@ -1,10 +1,18 @@
 import datetime
 import json
 import logging
+import os
 import xmltodict
 import requests
 import csv
 import time
+
+logger = logging.getLogger(__name__)
+
+_DB_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def _db_path(filename: str) -> str:
+    return os.path.join(_DB_DIR, filename)
 
 def seconds_until_gtfs(timestamp: int|str) -> int:
     timestamp = int(timestamp)
@@ -48,7 +56,8 @@ def update_databases() -> list[str]:
     global API_PATHS, TIME_LIMITS
     updated_keys = []
     existing_keys = {}  # get all existing keys
-    with open("last_fetched.csv", newline="") as file_reader:
+    last_fetched_path = _db_path("last_fetched.csv")
+    with open(last_fetched_path, newline="") as file_reader:
         csv_reader = csv.DictReader(file_reader)
         for row in csv_reader:
             if not row:  # skip empty lines
@@ -56,13 +65,13 @@ def update_databases() -> list[str]:
             key, timestamp = row["key"], row["fetched"]
             existing_keys[key] = True
             if (key in API_PATHS) and (time.time() - int(timestamp) > TIME_LIMITS[key](timestamp)):
-                logging.info(f"outdated: {key}")
+                logger.info("outdated: %s", key)
                 download_data(key)
                 updated_keys.append(key)
 
     for key in API_PATHS:  # download all never downloaded files
         if key not in existing_keys:
-            logging.info(f"never fetched: {key}")
+            logger.info("never fetched: %s", key)
             download_data(key)
             updated_keys.append(key)
 
@@ -82,7 +91,8 @@ def update_timing(key: str) -> None:
     None
     """
 
-    with open("last_fetched.csv", newline="") as file_reader:
+    last_fetched_path = _db_path("last_fetched.csv")
+    with open(last_fetched_path, newline="") as file_reader:
         csv_rows = []
         exists = False  # if key exists in file
         csv_reader = csv.DictReader(file_reader)
@@ -94,7 +104,7 @@ def update_timing(key: str) -> None:
         if not exists:
             csv_rows.append({"key": key, "fetched": str(int(time.time()))})  # add new row with key if not exists
 
-    with open("last_fetched.csv", "w", newline="") as file_writer:  # save changes to file
+    with open(last_fetched_path, "w", newline="") as file_writer:  # save changes to file
         csv_writer = csv.DictWriter(file_writer, csv_rows[0].keys())
         csv_writer.writeheader()
         csv_writer.writerows(csv_rows)  # update timings
@@ -115,20 +125,22 @@ def download_data(key: str) -> None:
     """
     global API_PATHS
 
-    logging.info(f"downloading: {key}")
+    logger.info("downloading: %s", key)
     match key:
         case "gazetteer":
-            response_return = requests.get(API_PATHS[key])  # get file from api
-            with open("gazetteer.json", "w+") as json_file:
+            response_return = requests.get(API_PATHS[key], timeout=60)
+            response_return.raise_for_status()
+            with open(_db_path("gazetteer.json"), "w+") as json_file:
                 json.dump(xmltodict.parse(response_return.text.encode()),
                           json_file)  # convert to dict and dump to 'json_file'
         case "gtfs":
-            response_return = requests.get(API_PATHS[key], stream=True)  # stream rather than all in memory
-            with open("itm_all_gtfs.zip", "wb") as writer:
+            response_return = requests.get(API_PATHS[key], stream=True, timeout=300)
+            response_return.raise_for_status()
+            with open(_db_path("itm_all_gtfs.zip"), "wb") as writer:
                 for chunk in response_return.iter_content(1024*1024*100):  # 100 MB chunks
                     writer.write(chunk)
 
-    logging.info(f"downloaded: {key}")
+    logger.info("downloaded: %s", key)
     update_timing(key)
 
 
@@ -144,6 +156,7 @@ def get_database(key: str) -> dict:
     dict
         Dictionary containing all json data
     """
+    raise NotImplementedError(f"get_database('{key}') is not yet implemented")
 
 
 if __name__ == "__main__":

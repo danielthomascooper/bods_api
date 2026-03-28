@@ -1,11 +1,33 @@
-/SECRET.txt
+# Secrets & credentials
+SECRET.txt
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data files (large / generated)
 /api/databases/gfts/
 /api/databases/itm_all_gtfs.zip
 /api/databases/gazetteer.json
 /api/Stops.csv
+api/databases/last_fetched.csv
+*.db
+
+# Binary / generated outputs
 *.bin
 *.png
-api/databases/last_fetched.csv
-venv/
-__pycache__/
+testing/map_plot.html
 *.pyc

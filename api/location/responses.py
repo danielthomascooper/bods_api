@@ -1,4 +1,6 @@
 import csv
+import logging
+import threading
 from lxml import etree
 import pandas as pd
 import json
@@ -6,7 +8,10 @@ import xmltodict
 from api.xml_methods import local_xpath, element_to_dict, flatten
 import os
 
-stop_dict = {}
+logger = logging.getLogger(__name__)
+
+_stop_dict: dict[str, dict] = {}
+_stop_dict_lock = threading.Lock()
 
 def load_stops(path: str) -> dict[str, dict]:
     loaded_stops = {}
@@ -16,6 +21,18 @@ def load_stops(path: str) -> dict[str, dict]:
             acto_code: str = row.pop("ATCOCode")
             loaded_stops[acto_code] = row
     return loaded_stops
+
+
+def _ensure_stops_loaded(rel_path: str) -> dict[str, dict]:
+    global _stop_dict
+    if _stop_dict:
+        return _stop_dict
+    with _stop_dict_lock:
+        if not _stop_dict:
+            logger.info("Loading stop data from %s", rel_path)
+            _stop_dict = load_stops(rel_path)
+            logger.info("Loaded %d stops", len(_stop_dict))
+    return _stop_dict
 
 class LocationResponse:
     def __init__(self, response_tree: etree.Element, stop_path: str = "Stops.csv"):
@@ -28,17 +45,13 @@ class LocationResponse:
         stop_path : str = "Stops.csv"
             The path to the NaPTaN csv file containing all stop data.
         """
-        global stop_dict
+        self.root: etree.Element = response_tree
+        self.namespace = etree.QName(self.root).namespace  # get root default namespace
 
         script_dir = os.path.dirname(__file__)
         rel_path = os.path.join(script_dir, "../Stops.csv")
+        self._stop_dict = _ensure_stops_loaded(rel_path)
 
-        self.root: etree.Element = response_tree
-        self.namespace = etree.QName(self.root).namespace  # get root default namespace
-        if not stop_dict:
-            print("loading stops...")
-            stop_dict = load_stops(rel_path)
-            print("loaded")
         self.fix_station_names()
 
 
@@ -81,7 +94,6 @@ class LocationResponse:
 
     def fix_station_names(self):
         """Replace the origin and dest names with the properly formatted versions."""
-        global stop_dict
         orig_name_elems = self.root.xpath(f"//{local_xpath('MonitoredVehicleJourney')}/{local_xpath('OriginName')}")
         orig_ref_elems = self.root.xpath(f"//{local_xpath('MonitoredVehicleJourney')}/{local_xpath('OriginRef')}")
         dest_name_elems = self.root.xpath(f"//{local_xpath('MonitoredVehicleJourney')}/{local_xpath('DestinationName')}")
@@ -89,8 +101,8 @@ class LocationResponse:
         for orig_name_elem, orig_ref_elem, dest_name_elem, dest_ref_elem in \
             zip(orig_name_elems, orig_ref_elems, dest_name_elems, dest_ref_elems):
             try:
-                orig_name_elem.text = stop_dict[orig_ref_elem.text]["CommonName"]
-                dest_name_elem.text = stop_dict[dest_ref_elem.text]["CommonName"]
+                orig_name_elem.text = self._stop_dict[orig_ref_elem.text]["CommonName"]
+                dest_name_elem.text = self._stop_dict[dest_ref_elem.text]["CommonName"]
             except KeyError:
                 continue
 

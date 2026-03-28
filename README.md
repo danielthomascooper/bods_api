@@ -1,40 +1,107 @@
-# Python wrapper for BODS API
+# BODS API — Python Wrapper for the Bus Open Data Service
 
-An API written in Python that uses the Bus Open Data Service (BODS) to get live bus location and other data such as 
-timetables and fares. 
+A Python API wrapper for the UK [Bus Open Data Service (BODS)](https://data.bus-data.dft.gov.uk/),
+providing access to live bus locations, timetable schedules, and fares data.
 
-Uses SQLite3 to store cached locations for buses and the timetable data. This uses the [GFTS](https://gtfs.org/) data
-format, both GFTS Schedule (.txt files) and GFTS Realtime (protobuf files).
+## Features
 
-This has the advantage over the BODS API that it caches the bus locations as the Realtime feed only provides deltas not 
-a full list of all buses meeting certain parameters. It also integrates the Schedule data into one SQL database to allow
-for easier access to schedules.
+- **Live bus locations** via the BODS Vehicle Monitoring API, returned as JSON.
+- **Timetable database** built from GTFS Schedule data, stored in SQLite for fast local queries.
+- **Caching layer** with TTL-based LRU cache to minimise redundant upstream requests.
+- **Blue/green database switching** for zero-downtime GTFS database updates.
+- **Flask server** exposing a `/locations` REST endpoint.
 
-## Requirements
+## Prerequisites
 
-The following requirements are based on the versions used for development, and likely will work with higher versions:
+- Python 3.12+
+- ~25 GB disk space for GTFS database files
+- A BODS API key — register at <https://data.bus-data.dft.gov.uk/> and find your key in Account Settings
 
+## Quick Start
+
+```bash
+# Clone and set up a virtual environment
+git clone <repo-url> && cd bods_api
+python -m venv venv
+source venv/bin/activate   # Linux/macOS
+pip install -r requirements.txt
+
+# Configure your API key (choose one):
+#   Option A — environment variable (recommended)
+export BODS_API_KEY=your_api_key_here
+
+#   Option B — SECRET.txt file (git-ignored)
+echo "your_api_key_here" > SECRET.txt
+
+# Run the Flask server
+python flask_server.py
 ```
-Flask==3.1.0
-folium==0.18.0
-lxml==5.3.0
-matplotlib==3.9.2
-numpy==2.1.3
-pandas==2.2.3
-plotly==5.24.1
-protobuf==5.28.3
-Requests==2.32.3
-xmltodict==0.14.2
+
+The server starts on `http://127.0.0.1:5000` by default.
+
+## Configuration
+
+All configuration is via environment variables (see [.env.example](.env.example)):
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `BODS_API_KEY` | — | **Required.** Your BODS API key. |
+| `FLASK_DEBUG` | `false` | Enable Flask debug mode (`true`/`false`). |
+| `FLASK_HOST` | `127.0.0.1` | Host to bind the Flask server to. |
+| `FLASK_PORT` | `5000` | Port for the Flask server. |
+| `ALLOWED_ORIGINS` | `*` | CORS `Access-Control-Allow-Origin` header value. |
+| `CACHE_TIMEOUT` | `15` | Cache TTL in seconds. |
+| `CACHE_MAX_SIZE` | `256` | Maximum number of cached responses. |
+
+## API Usage
+
+### `/locations` endpoint
+
+Query parameters are passed through to the BODS Vehicle Monitoring API:
+
+```http
+GET /locations?lineRef=X4&operatorRef=FBRI
 ```
 
-The protobuf files are compiled from the proto file provided at https://gtfs.org/documentation/realtime/proto/.
+Supported parameters: `boundingBox`, `operatorRef`, `lineRef`, `producerRef`,
+`originRef`, `destinationRef`, `vehicleRef`.
 
-The database files are large and require ~25GB of disk space.
+### Python API
 
-## Usage
+```python
+from api.bods_api import BODS_request
 
-'flask_server.py' provides an example of how the API can be used. The main function to be used is bods_api.BODS_request 
-which takes in the same arguments as the BODS API which are passed to the call to be used. In development is the
-schedule database which is to be integrated to the same function.
+response = BODS_request(api_key, "location", lineRef="X4", operatorRef="FBRI")
+df = response.to_df()     # pandas DataFrame
+json_str = response.to_json()  # JSON string
+```
 
-The databases can be used directly until the API is finished.
+## Project Structure
+
+```text
+flask_server.py              # Flask application entry point
+api/
+  bods_api.py                # Core BODS API request logic
+  xml_methods.py             # XML/etree utility functions
+  location/
+    responses.py             # LocationResponse class (XML → dict/df/json)
+  timetable/
+    timetable.py             # GTFS timetable queries (SQLite)
+  databases/
+    caching.py               # Database update scheduler & downloader
+    gtfs_conversion.py       # GTFS ZIP → SQLite converter
+    manager.py               # Blue/green database manager
+    gfts/commands.py          # SQL CREATE TABLE definitions
+protobuf/                    # GTFS Realtime protobuf definitions
+testing/                     # Development/demo scripts (not production)
+```
+
+## Data Sources
+
+- **BODS API** — <https://data.bus-data.dft.gov.uk/>
+- **NaPTAN** (stop data) — <https://naptan.api.dft.gov.uk/>
+- **GTFS Schedule** — <https://gtfs.org/>
+
+## License
+
+This project is not currently licensed. Contact the author for usage terms.

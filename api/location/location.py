@@ -1,3 +1,4 @@
-import protobuf.gtfs_realtime_pb2 as gtfs
+"""Bus location processing module.
 
-
+Placeholder for future location-specific logic.
+"""
