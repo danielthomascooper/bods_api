@@ -57,17 +57,22 @@ def update_databases() -> list[str]:
     updated_keys = []
     existing_keys = {}  # get all existing keys
     last_fetched_path = _db_path("last_fetched.csv")
-    with open(last_fetched_path, newline="") as file_reader:
-        csv_reader = csv.DictReader(file_reader)
-        for row in csv_reader:
-            if not row:  # skip empty lines
-                continue
-            key, timestamp = row["key"], row["fetched"]
-            existing_keys[key] = True
-            if (key in API_PATHS) and (time.time() - int(timestamp) > TIME_LIMITS[key](timestamp)):
-                logger.info("outdated: %s", key)
-                download_data(key)
-                updated_keys.append(key)
+    
+    # Read existing fetch records if file exists
+    if os.path.exists(last_fetched_path):
+        with open(last_fetched_path, newline="") as file_reader:
+            csv_reader = csv.DictReader(file_reader)
+            for row in csv_reader:
+                if not row:  # skip empty lines
+                    continue
+                key, timestamp = row["key"], row["fetched"]
+                existing_keys[key] = True
+                if (key in API_PATHS) and (time.time() - int(timestamp) > TIME_LIMITS[key](timestamp)):
+                    logger.info("outdated: %s", key)
+                    download_data(key)
+                    updated_keys.append(key)
+    else:
+        logger.info("No fetch history found, will download all databases")
 
     for key in API_PATHS:  # download all never downloaded files
         if key not in existing_keys:
