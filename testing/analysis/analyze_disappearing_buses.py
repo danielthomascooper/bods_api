@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Analyze disappearing buses pattern - compare bounds vs line-based API requests."""
 
+import os
 import sys
 from pathlib import Path
 from time import sleep

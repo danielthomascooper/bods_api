@@ -48,8 +48,11 @@ class LocationResponse:
         self.root: etree.Element = response_tree
         self.namespace = etree.QName(self.root).namespace  # get root default namespace
 
-        script_dir = os.path.dirname(__file__)
-        rel_path = os.path.join(script_dir, "../Stops.csv")
+        if os.path.isabs(stop_path):
+            rel_path = stop_path
+        else:
+            script_dir = os.path.dirname(__file__)
+            rel_path = os.path.join(script_dir, "..", stop_path)
         self._stop_dict = _ensure_stops_loaded(rel_path)
 
         self.fix_station_names()

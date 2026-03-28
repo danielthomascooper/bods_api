@@ -36,10 +36,10 @@ def get_services_from_stop(db_path, stop_code: str):
     cursor.execute(
         f"SELECT trips.trip_id, trips.shape_id FROM trips "
         f"JOIN calendar USING(service_id) "
-        f"JOIN calendar_dates USING(service_id) "
+        f"LEFT JOIN calendar_dates USING(service_id) "
         f"JOIN stop_times USING(trip_id) "
         f"WHERE stop_times.stop_id = ? "
-        f"AND ((calendar.start_date < ? AND calendar.end_date > ? AND calendar.{weekday} = 1) "
+        f"AND ((calendar.start_date <= ? AND calendar.end_date >= ? AND calendar.{weekday} = 1) "
         f"OR (calendar_dates.exception_type = 1 AND calendar_dates.date = ?))",
         (stop_code, date_string, date_string, date_string)
     )

@@ -69,12 +69,12 @@ def get_buses_details(bus_db: str|os.PathLike = os.path.join(os.path.dirname(__f
               timetable_cache: str|os.PathLike = Path(__file__).parent.parent/'gfts'/'sql'/'current_database.txt',
               **kwargs):
     with open(Path(timetable_cache).absolute(), 'r') as f:
-        timetable_path = str(f.read())
+        timetable_path = str(f.read()).strip()
 
-    timetable_keys = ('operatorRef', 'vehicleRef', 'lineRef', 'producerRef', 'originRef', 'destinationRef')
     conditions = []
+    params = []
 
-    start_of_command = f"""SELECT 
+    start_of_command = """SELECT 
                              v.position_lat,
                              v.position_lon,
                              v.bearing,
@@ -99,28 +99,35 @@ def get_buses_details(bus_db: str|os.PathLike = os.path.join(os.path.dirname(__f
     for arg in kwargs:
         if arg == 'bounding_box':
             lon1, lat1, lon2, lat2 = kwargs[arg]
-            conditions.append(f"v.position_lat >= {min(lat1, lat2)} AND v.position_lat <= {max(lat1, lat2)} AND "
-                              f"v.position_lon >= {min(lon1, lon2)} AND v.position_lon <= {max(lon1, lon2)}")
+            conditions.append("v.position_lat >= ? AND v.position_lat <= ? AND "
+                              "v.position_lon >= ? AND v.position_lon <= ?")
+            params.extend([min(lat1, lat2), max(lat1, lat2), min(lon1, lon2), max(lon1, lon2)])
         elif arg == 'routeId':
-            conditions.append(f"v.route_id == '{kwargs[arg]}'")
+            conditions.append("lt.route_id = ?")
+            params.append(kwargs[arg])
         elif arg == 'startTimeAfter':
-            conditions.append(f"v.timestamp >= {kwargs[arg]}")
+            conditions.append("v.timestamp >= ?")
+            params.append(kwargs[arg])
         elif arg == 'startTimeBefore':
-            conditions.append(f"v.timestamp <= {kwargs[arg]}")
+            conditions.append("v.timestamp <= ?")
+            params.append(kwargs[arg])
         elif arg == 'operatorRef':
-            conditions.append(f"lt.operatorRef == '{kwargs[arg]}'")
+            conditions.append("a.agency_noc = ?")
+            params.append(kwargs[arg])
         elif arg == 'vehicleRef':
-            conditions.append(f"lt.vehicleRef == '{kwargs[arg]}'")
+            conditions.append("v.vehicle_id = ?")
+            params.append(kwargs[arg])
 
     if conditions:
         command = start_of_command + "WHERE " + " AND ".join(conditions)
     else:
         command = start_of_command
-    conn = sqlite3.connect(Path(__file__).parent / "bus_locations.db")
+    conn = sqlite3.connect(bus_db)
     cursor = conn.cursor()
-    cursor.execute(f"""ATTACH '{timetable_path}' AS 'timetable'""")
-    selected_cursor = cursor.execute(command)
+    cursor.execute("ATTACH ? AS 'timetable'", (timetable_path,))
+    selected_cursor = cursor.execute(command, params)
     return_data = selected_cursor.fetchall()
+    conn.close()
     return return_data
 
 

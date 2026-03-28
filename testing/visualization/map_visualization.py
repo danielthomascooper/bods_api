@@ -27,14 +27,14 @@ map_builder.fillcontinents(color='coral', lake_color='aqua')
 map_builder.drawcoastlines()
 map_builder.drawcountries()
 
-# Draw a sample bounding box on the map
-x1, y1 = map_builder(-25, -25)
-x2, y2 = map_builder(-25, 25)
-x3, y3 = map_builder(25, 25)
-x4, y4 = map_builder(25, -25)
+# Draw a sample bounding box on the map (Reading, UK area)
+x1, y1 = map_builder(-1.17, 51.39)
+x2, y2 = map_builder(-1.17, 51.50)
+x3, y3 = map_builder(-0.72, 51.50)
+x4, y4 = map_builder(-0.72, 51.39)
 poly = Polygon([(x1, y1), (x2, y2), (x3, y3), (x4, y4)],
-               facecolor='red', edgecolor='green', linewidth=3)
-#  plt.gca().add_patch(poly)  # Uncomment to display the polygon
+               facecolor='red', edgecolor='green', linewidth=3, alpha=0.3)
+plt.gca().add_patch(poly)
 
 plt.savefig("map.png", dpi=150, bbox_inches="tight")
 print("✓ Map visualization saved to map.png")

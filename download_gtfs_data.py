@@ -32,7 +32,7 @@ def main():
     print("\n" + "="*70)
     print("GTFS DOWNLOAD - Real UK Bus Timetable Data")
     print("="*70)
-    print("\n⚠️  WARNING: This will download ~25 GB of data")
+    print("\n   WARNING: This will download ~25 GB of data")
     print("   Estimated time: 2-3 hours")
     print("   Location: api/databases/gfts/sql/blue.db & green.db\n")
     

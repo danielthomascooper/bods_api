@@ -36,8 +36,11 @@ class DatabaseManager:
             if not os.path.isfile(self.current_db_cache):
                 pathlib.Path(self.current_db_cache).touch()
             with open(current_db_cache, "r") as cache_file:
-                cached_db_path = cache_file.read()
-                if os.path.normpath(cached_db_path) == os.path.normpath(self.blue_database):
+                cached_db_path = cache_file.read().strip()
+                if not cached_db_path:
+                    # If cache is empty, default to blue
+                    self.current_database = "blue"
+                elif os.path.normpath(cached_db_path) == os.path.normpath(self.blue_database):
                     self.current_database = "blue"
                 elif os.path.normpath(cached_db_path) == os.path.normpath(self.green_database):
                     self.current_database = "green"

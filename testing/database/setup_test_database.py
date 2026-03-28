@@ -154,16 +154,20 @@ def create_sample_gtfs() -> None:
         ])
         writer.writeheader()
         stop_times = [
+            # T1/T2: weekday service (WD) on Route R1, covering S1-S4
             ("T1", "08:00:00", "08:00:00", "S1", 1, None, 0, 0, 0, 1, None),
             ("T1", "08:15:00", "08:15:00", "S4", 2, None, 0, 0, None, 1, None),
             ("T1", "08:30:00", "08:30:00", "S2", 3, None, 0, 0, None, 1, None),
             ("T2", "09:00:00", "09:00:00", "S2", 1, None, 0, 0, 0, 1, None),
             ("T2", "09:15:00", "09:15:00", "S4", 2, None, 0, 0, None, 1, None),
             ("T2", "09:30:00", "09:30:00", "S1", 3, None, 0, 0, None, 1, None),
-            ("T3", "10:00:00", "10:00:00", "S3", 1, None, 0, 0, 0, 1, None),
-            ("T3", "10:20:00", "10:20:00", "S4", 2, None, 0, 0, None, 1, None),
+            # T3/T4: weekend service (WE) on Route R2, also covering S1/S2 so tests work any day
+            ("T3", "10:00:00", "10:00:00", "S1", 1, None, 0, 0, 0, 1, None),
+            ("T3", "10:10:00", "10:10:00", "S3", 2, None, 0, 0, None, 1, None),
+            ("T3", "10:20:00", "10:20:00", "S4", 3, None, 0, 0, None, 1, None),
             ("T4", "11:00:00", "11:00:00", "S4", 1, None, 0, 0, 0, 1, None),
-            ("T4", "11:20:00", "11:20:00", "S3", 2, None, 0, 0, None, 1, None),
+            ("T4", "11:10:00", "11:10:00", "S2", 2, None, 0, 0, None, 1, None),
+            ("T4", "11:20:00", "11:20:00", "S3", 3, None, 0, 0, None, 1, None),
         ]
         for st in stop_times:
             writer.writerow(dict(zip([

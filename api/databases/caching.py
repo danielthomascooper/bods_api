@@ -161,7 +161,15 @@ def get_database(key: str) -> dict:
     dict
         Dictionary containing all json data
     """
-    raise NotImplementedError(f"get_database('{key}') is not yet implemented")
+    match key:
+        case "gazetteer":
+            path = _db_path("gazetteer.json")
+            if not os.path.isfile(path):
+                raise FileNotFoundError(f"Gazetteer database not found at '{path}'. Run update_databases() first.")
+            with open(path, "r") as f:
+                return json.load(f)
+        case _:
+            raise ValueError(f"Unknown database key: '{key}'")
 
 
 if __name__ == "__main__":

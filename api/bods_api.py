@@ -52,6 +52,9 @@ def BODS_request(api_key: str,
         if data_type not in data_types:
             raise ValueError(f"'{data_type}' is an invalid data type, must be one of {data_types}")
 
+        if data_type in ("timetable", "fares"):
+            raise NotImplementedError(f"'{data_type}' data type is not yet implemented")
+
         if not params:
             raise ValueError("Must include at least one parameter in request.")
 
@@ -70,9 +73,9 @@ def BODS_request(api_key: str,
             case "location":
                 return LocationResponse(tree)
             case "timetable":
-                return "timetable placeholder"
+                raise NotImplementedError("Timetable data type is not yet implemented")
             case "fares":
-                return "fares placeholder"
+                raise NotImplementedError("Fares data type is not yet implemented")
 
 
 if __name__ == "__main__":
