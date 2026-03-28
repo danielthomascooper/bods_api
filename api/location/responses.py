@@ -31,7 +31,7 @@ class LocationResponse:
         global stop_dict
 
         script_dir = os.path.dirname(__file__)
-        rel_path = os.path.join(script_dir, "../api/Stops.csv")
+        rel_path = os.path.join(script_dir, "../Stops.csv")
 
         self.root: etree.Element = response_tree
         self.namespace = etree.QName(self.root).namespace  # get root default namespace

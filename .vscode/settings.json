@@ -1,0 +1,13 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "pip": true,
+        "/^source /home/habrt/source/bods_api/venv/bin/activate && pip list --outdated$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^source /home/habrt/source/bods_api/venv/bin/activate && pip install --upgrade Flask folium lxml matplotlib numpy packaging pandas plotly protobuf pyshp requests xmltodict$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

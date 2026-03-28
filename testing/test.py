@@ -31,12 +31,26 @@ fig = px.scatter_mapbox(my_df,
                         text='MonitoredVehicleJourney_PublishedLineName',
                         hover_name='MonitoredVehicleJourney_DestinationName',
                         color='MonitoredVehicleJourney_DestinationName',
-                        mapbox_style="open-street-map"
+                        mapbox_style="carto-positron"
                         )
 
+# Calculate center and zoom
+center_lat = my_df['MonitoredVehicleJourney_VehicleLocation_Latitude'].mean()
+center_lon = my_df['MonitoredVehicleJourney_VehicleLocation_Longitude'].mean()
 
-html_path = "map_plot.html"
-png_path = "map_plot.png"
+fig.update_layout(
+    mapbox=dict(
+        center=dict(lat=center_lat, lon=center_lon),
+        zoom=11
+    ),
+    width=1200,
+    height=800
+)
+
+
+output_dir = os.path.dirname(__file__)
+html_path = os.path.join(output_dir, "map_plot.html")
+png_path = os.path.join(output_dir, "map_plot.png")
 fig.write_html(html_path, include_plotlyjs='cdn')
 print(f"Saved {html_path}")
 try:
