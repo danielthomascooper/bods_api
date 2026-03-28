@@ -1,4 +1,5 @@
 # Python wrapper for BODS API
+
 An API written in Python that uses the Bus Open Data Service (BODS) to get live bus location and other data such as 
 timetables and fares. 
 
@@ -10,7 +11,9 @@ a full list of all buses meeting certain parameters. It also integrates the Sche
 for easier access to schedules.
 
 ## Requirements
+
 The following requirements are based on the versions used for development, and likely will work with higher versions:
+
 ```
 Flask==3.1.0
 folium==0.18.0
@@ -29,6 +32,7 @@ The protobuf files are compiled from the proto file provided at https://gtfs.org
 The database files are large and require ~25GB of disk space.
 
 ## Usage
+
 'flask_server.py' provides an example of how the API can be used. The main function to be used is bods_api.BODS_request 
 which takes in the same arguments as the BODS API which are passed to the call to be used. In development is the
 schedule database which is to be integrated to the same function.
