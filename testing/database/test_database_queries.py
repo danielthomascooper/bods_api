@@ -5,14 +5,14 @@ import sqlite3
 import os
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "api" / "databases" / "gfts" / "sql" / "test_sample.db"
+DB_PATH = Path(__file__).parent.parent.parent / "api" / "databases" / "gfts" / "sql" / "test_sample.db"
 
 
 def test_queries():
     """Run test queries against the database."""
     if not DB_PATH.exists():
         print(f"❌ Database not found at {DB_PATH}")
-        print("Run: python setup_test_database.py")
+        print("Run: python -m testing.database.setup_test_database")
         return
 
     conn = sqlite3.connect(DB_PATH)

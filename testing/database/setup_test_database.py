@@ -12,8 +12,8 @@ import logging
 from pathlib import Path
 import sys
 
-# Add parent to path for imports
-sys.path.insert(0, os.path.dirname(__file__))
+# Add root to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from api.databases.gtfs_conversion import gtfs_files_to_db
 
@@ -21,8 +21,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Create sample data directory
-SAMPLE_DATA_DIR = Path(__file__).parent / "api" / "databases" / "gfts" / "raw"
-DB_DIR = Path(__file__).parent / "api" / "databases" / "gfts" / "sql"
+SAMPLE_DATA_DIR = Path(__file__).parent.parent.parent / "api" / "databases" / "gfts" / "raw"
+DB_DIR = Path(__file__).parent.parent.parent / "api" / "databases" / "gfts" / "sql"
 
 SAMPLE_DATA_DIR.mkdir(parents=True, exist_ok=True)
 DB_DIR.mkdir(parents=True, exist_ok=True)

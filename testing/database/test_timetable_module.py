@@ -5,13 +5,13 @@ import sys
 import os
 from pathlib import Path
 
-# Add parent to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Add root to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from api.timetable.timetable import get_services_from_stop
 
 # Use our test database
-TEST_DB = Path(__file__).parent / "api/databases/gfts/sql/test_sample.db"
+TEST_DB = Path(__file__).parent.parent.parent / "api/databases/gfts/sql/test_sample.db"
 
 print("\n" + "="*60)
 print("Testing Timetable Module (Parameterized SQL Queries)")
@@ -19,7 +19,7 @@ print("="*60)
 
 if not TEST_DB.exists():
     print(f"\n❌ Test database not found: {TEST_DB}")
-    print("Run: python setup_test_database.py")
+    print("Run: python -m testing.database.setup_test_database")
     sys.exit(1)
 
 print(f"\n📦 Using test database: {TEST_DB}")
